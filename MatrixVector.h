@@ -1,0 +1,12 @@
+double **createMatrix(int m, int n);
+double *createVector(int n);
+void printMatrix(double **A, int m, int n);
+void printVector(double *b, int n);
+double length(double *v, int n);
+void freeMatrix(double **A, int m);
+void multVector(double a, double* v, int n);
+void addVector(double* v, double *w, int n);
+double innerproduct(double *b, double*w, int n);
+void addMatrices(double **A, double** B, int n);
+void cpyMatrix(double** dest, double** source, int n, int m);
+void divideVector( double* v, double a, int n);
