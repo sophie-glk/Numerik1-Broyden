@@ -19,6 +19,11 @@ double **createMatrix(int m, int n)
     for (int i = 0; i < m; i++)
     {
         M[i] = malloc(n * sizeof(double));
+        if (M[i] == NULL)
+        {
+            puts("Konnte keinen Speicher allocaten");
+            exit(1);
+        }
     }
     return M;
 }
@@ -32,18 +37,23 @@ void freeMatrix(double **A, int m)
     }
     free(A);
 }
-void cpyMatrix(double** dest, double** source, int n, int m){
- for (int i = 0; i < n; i++)
- {
-    memcpy(dest[i], source[i], m*sizeof(double));
- }
- 
-}
 
-void addMatrices(double **A, double** B, int n){
+//kopiert eine Matrix in eine andere
+void cpyMatrix(double **dest, double **source, int n, int m)
+{
     for (int i = 0; i < n; i++)
     {
-        for(int j = 0; j < n; j++){
+        memcpy(dest[i], source[i], m * sizeof(double));
+    }
+}
+
+//addiert zwei Matritzen
+void addMatrices(double **A, double **B, int n)
+{
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = 0; j < n; j++)
+        {
             A[i][j] = A[i][j] + B[i][j];
         }
     }
@@ -61,19 +71,27 @@ double *createVector(int n)
     return b;
 }
 
-void multVector(double a, double* v, int n){
-for(int i = 0; i < n; i++){
-    v[i] = a*v[i];
-}
-}
-
-void divideVector( double* v, double a, int n){
-for(int i = 0; i < n; i++){
-    v[i] = v[i]/a;
-}
+//mulitpliziere Vektor mit Skalar
+void multVector(double a, double *v, int n)
+{
+    for (int i = 0; i < n; i++)
+    {
+        v[i] = a * v[i];
+    }
 }
 
-void addVector(double* v, double *w, int n){
+//dividiere Vektor durch Skalar
+void divideVector(double *v, double a, int n)
+{
+    for (int i = 0; i < n; i++)
+    {
+        v[i] = v[i] / a;
+    }
+}
+
+//addiere zwei Vektoren
+void addVector(double *v, double *w, int n)
+{
     for (int i = 0; i < n; i++)
     {
         v[i] += w[i];
@@ -102,7 +120,8 @@ void printVector(double *b, int n)
     }
 }
 
-double innerproduct(double *b, double *w, int n)
+//berechnet das Skalaprodukt zweier Vektoren
+double dotproduct(double *b, double *w, int n)
 {
     double result = 0;
     for (int i = 0; i < n; i++)
@@ -113,6 +132,7 @@ double innerproduct(double *b, double *w, int n)
 }
 
 // berechnet die Euklidische Länge eines Vektors
-double length(double *v, int n){
-    return sqrt(innerproduct(v,v,n));
+double length(double *v, int n)
+{
+    return sqrt(dotproduct(v, v, n));
 }
