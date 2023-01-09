@@ -1,7 +1,7 @@
 #include <math.h>
 #include "MatrixVector.h"
 
-//Definition der funktionen f und g, und deren Ableitungen
+//Definition der funktionen f und g, und deren Ableitungen / Jacobi Matritzen
 void f(double *x, double *result)
 {
     result[0] = (x[0] + 3) * (x[1] * x[1] * x[1] - 7) + 18;

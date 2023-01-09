@@ -4,7 +4,8 @@
 #include <string.h>
 
 /*
-Helferfunktionen zum Arbeiten mit Vektoren und Matritzen
+Helferfunktionen zum Arbeiten mit Vektoren und Matritzen,
+nicht alle werden benutzt
 */
 
 // allocated den Speicher für ein Matrix

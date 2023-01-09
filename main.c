@@ -6,7 +6,7 @@
 #include <math.h>
 #include "functions.h"
 
-// Ergebnis struct, dass ale geforderten Daten zurückgibt
+// Ergebnis struct, dass ale geforderten Daten speichert
 struct result
 {
     double *x;
@@ -15,6 +15,7 @@ struct result
     int n;
 };
 
+// datiere Matrix auf wie in Vorlesung besprochen
 inline void aufdat(double **B, double *fx, double *d, int n)
 {
     double c = dotproduct(d, d, n); // berechne d^T*d, gleich dem Skalarprodukt
@@ -27,44 +28,55 @@ inline void aufdat(double **B, double *fx, double *d, int n)
     }
 }
 
+// schreibe AnalyseDatei (bzw. hänge Daten an diese an)
 inline void updateReport(FILE *report, double prevDeltaNorm, double deltaNorm, double *fx, int i, int n)
 {
 
     // schreibe Daten in Tabelle zur Analyse
     double konvOrdnung = log(deltaNorm) / log(prevDeltaNorm);
-    if (konvOrdnung < 1)
+    fprintf(report, "%02d | %02.15f | %02.15f | ", i, length(fx, n), deltaNorm); // schreibe Iteration, norm von x^i,...
+    // schreibe Konvergenzordnung
+    if (konvOrdnung < 1 || konvOrdnung == NAN || konvOrdnung == INFINITY)
     {
-        konvOrdnung = NAN;
+        // Wenn die berechnete Konvergenzordnung nicht sinvoll ist, gebe nur ein - aus
+        fprintf(report, "- \n");
     }
-    fprintf(report, "%02d | %02.14f | %02.14f | %f \n", i, length(fx, n), deltaNorm, konvOrdnung); // schreibe Iteration, norm von x^i,...
+    else
+    {
+        fprintf(report, "%f \n", konvOrdnung);
+    }
 }
 
+// führe den Broyden Algortihmus durch und berechne Nullstelle einer Funktion
 struct result calcZero(double *x, double **B, int maxit, double tol, int n, void f(double *, double *), const char *name)
 {
 
+    // benötigt zum berechnen der Konvergenzordnung
     double deltaNorm = 1;
     double prevDeltaNorm = 0;
 
+    // Speicher für ide Solve funktion.
     double **LR = createMatrix(n, n);
-    double *d = createVector(n);
     int *permutation = malloc(n * sizeof(int));
     if (permutation == NULL)
     {
         puts("Error allocatiing memmory");
         exit(1);
     }
+    double *d = createVector(n);
     double *fx = createVector(n);
 
     // standard rückgabe, wenn die Schleife ohne Abbruch durchläuft war das Verfahren nicht erfolgreich
     struct result r;
-    r.x = x;
+    r.x = x; // aliase für die pointer, muss nicht mehr geupdated werden
     r.fx = fx;
     r.flag = -1;
     r.n = maxit;
 
     // öffne report Datei
     FILE *report = fopen("report.txt", "a");
-    if(report == NULL){
+    if (report == NULL)
+    {
         puts("Error opening report");
         exit(1);
     }
@@ -75,7 +87,7 @@ struct result calcZero(double *x, double **B, int maxit, double tol, int n, void
               // die schleife berechnet in jeder Iteration nur f(x^k+1), mit 0 beginned, weswegen wir f(x^0) vorgeben müssen
     for (int i = 1; i <= maxit; i++)
     {
-        // kopiere -f(x^k) in d, da d durch Solve von der Lösung überschrieben wird und wir später beide Variablen benötigen
+        // kopiere -f(x^k) in d, da d durch Solve von der Lösung überschrieben wird und wir später beide Variablen benötigen und wir daher sowieso kopieren müssten
         for (int j = 0; j < n; j++)
         {
             d[j] = -fx[j];
@@ -88,14 +100,14 @@ struct result calcZero(double *x, double **B, int maxit, double tol, int n, void
         aufdat(B, fx, d, n);          // aufdatiere B
 
         // schreibe den Bericht stück für stück
-        prevDeltaNorm = deltaNorm;
-        deltaNorm = length(d, n); // Norm von d = x^k+1-x^k
+        prevDeltaNorm = deltaNorm; // zur berechnung der Konvergenzordung wird d^(k) benötigt
+        deltaNorm = length(d, n);  // Norm von d^k+1 = x^k+1-x^k
         updateReport(report, prevDeltaNorm, deltaNorm, fx, i, n);
 
-        // abruch Kriterium (Skript 5.6.2)
+        // abruch Kriterium (Skript 5.6.2) |x^k+1-x^k| < tol
         if (deltaNorm < tol)
         {
-            r.flag = 0; // Verfahren wurde erfolgreich durchgeführt
+            r.flag = 0; // Verfahren wurde erfolgreich durchgeführt, wir können abbrechen
             r.n = i;
             break;
         }
@@ -109,6 +121,7 @@ struct result calcZero(double *x, double **B, int maxit, double tol, int n, void
     return r;
 }
 
+// Bearbeitt die Aufgaben für die verschiedenen Eingaben
 void apply(double *x, double **M, void f(double *, double *), char *name)
 {
     int maxit = 50;            // setzte maximale Iterationen
@@ -124,6 +137,7 @@ void apply(double *x, double **M, void f(double *, double *), char *name)
         printVector(r.fx, 2);
         printf("iterationen: \n%d \n", r.n);
     }
+    // kein erfolgreicher Durchlauf
     else
     {
         puts("Its haben nicht ausgereicht.");
@@ -135,9 +149,11 @@ void apply(double *x, double **M, void f(double *, double *), char *name)
 
 int main()
 {
+    // Speicher für x und M
     double **M = createMatrix(2, 2);
     double *x = createVector(2);
 
+    // aufgabe (ii)
     x[0] = -0.5;
     x[1] = 1.4;
     Df(x, M);
@@ -148,6 +164,7 @@ int main()
     Df(x, M);
     apply(x, M, f, "f2");
 
+    // aufgabe (iii)
     x[0] = 0;
     x[1] = 2;
     Dg(x, M);
@@ -155,19 +172,16 @@ int main()
 
     x[0] = 0;
     x[1] = 2;
-    M[0][0] = 1;
-    M[0][1] = 0;
-    M[1][0] = 0;
-    M[1][1] = 1;
+    M[0][0] = 1; M[0][1] = 0;
+    M[1][0] = 0; M[1][1] = 1;
     apply(x, M, g, "g2");
-
+   
     x[0] = 0;
     x[1] = 2;
+    //Differenzenquotient
     double h = pow(10, -5);
-    M[0][0] = 1;
-    M[0][1] = 1;
-    M[1][0] = 2 * x[0] + h;
-    M[1][1] = 2 * x[1] + h;
+    M[0][0] = 1; M[0][1] = 1;
+    M[1][0] = 2 * x[0] + h; M[1][1] = 2 * x[1] + h;
     apply(x, M, g, "g3");
 
     free(x);
