@@ -6,6 +6,8 @@
 #include <math.h>
 #include "functions.h"
 
+
+
 // Ergebnis struct, dass ale geforderten Daten speichert
 struct result
 {
@@ -55,7 +57,7 @@ struct result calcZero(double *x, double **B, int maxit, double tol, int n, void
     double deltaNorm = 1;
     double prevDeltaNorm = 0;
 
-    // Speicher für ide Solve funktion.
+    // Speicher für die Solve funktion.
     double **LR = createMatrix(n, n);
     int *permutation = malloc(n * sizeof(int));
     if (permutation == NULL)
@@ -80,8 +82,10 @@ struct result calcZero(double *x, double **B, int maxit, double tol, int n, void
         puts("Error opening report");
         exit(1);
     }
-
+    
+    //schreibe "Header" des Datensatzes
     fprintf(report, "%s \n", name);
+    fprintf(report, "k  |     ||f(x_k)||    |   ||delta x||     |   Konv.Ordn. \n");
 
     f(x, fx); // berechne f(x^0)
               // die schleife berechnet in jeder Iteration nur f(x^k+1), mit 0 beginned, weswegen wir f(x^0) vorgeben müssen
